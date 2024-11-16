@@ -921,3 +921,189 @@ select product_name, stock,price,charp.FnStokTopla(stock,price) from Product
 -- Şema, tabloları, yaptığı işe göre ayırmak için kullanılabilir!!!
 
 
+
+
+-- Join : 
+-- Inner Join , Left Join, Right,Cross
+
+-- Join Hatırlatma
+
+select c.category_name,c.category_id,p.product_name,p.category_id from Product p
+inner join Category C
+on c.category_id=p.category_id
+-- Inner Join : ile iki yada daha fazla tablo birleştiğinde, her iki tabloda da karşılığı olan kayıtlar gelir!!
+-- Inner join ile birleştirme işlemlerinde, iki tabloda da karışılığı olan veriler getirilir,
+
+-- Categori tablosundaki bir kategoriye bağlı olmayan, yada hiç bir ürünün bağlı olmadığı kategori inner join ile getirilmez!!!
+-- Product - Category
+
+
+-- Left Join : Solda olan tabloyu referans olarak alır, o tablodaki verinin joinlenen tablodaki verisi yoksa, null değer verirr
+
+select c.category_name,c.category_id,p.product_name,p.category_id from Category c
+left join Product p
+on c.category_id=p.category_id
+-- Yukarıdaki komutu çalıştırdığımda, tüm categoriler listelenecektir!! Ancak kendisine bir ürün bağlı olmadığı için, ürün kısmı null gelecektir!!
+
+
+-- Right Join : Left Join'in tam tersi olarak çalışır!!
+select c.category_name,c.category_id,p.product_name,p.category_id from Category c
+RIGHT join Product p
+on c.category_id=p.category_id
+
+
+--Cross Join : 
+select Category.category_name,Product.product_name from Category
+Cross join Product
+
+-- Cross join, yapıldığında tablodaki ilişkiye bakılmaz, tüm kategoriler ile tüm ürünleri eşleştirir!!,
+
+
+-- Primary key ve Foreing key Constraintler!!
+
+-- Mevcut tabloya primary key eklemek : 
+
+
+alter table Category
+add CONSTRAINT PK_CategoryId PRIMARY KEY(category_id)
+
+-- Primary Key : Bir tablonun Id kolonun primary key olması, o tabloda id alanında benzersizlik sağlar!! 
+--ayrıca her kaydın  Primary Key değerinden ayırt edilmesini sağlar!
+
+-- Primary key, null değer alamayacağı için eşşsiz ve null değer alamayacağını garanti eder!!
+
+-- Id alanı primary key sayesinde, benzersiz olacağı için, veri aramalarında, id değeri üzerinden arama yapılırsa, yüksek hız garanti eder!!
+
+-- sadece kod ile değil aynı zamanda, wizard yöntemi ile de primary key contraint verilebilir!!!
+
+
+-- Foreing key constraint : Bir primary key ile birlikte çalışır!!
+-- İlişkisel tablolarda her iki tabloyu fiziki olarak birbirine bağlamak için, primary key ve foreing key contraint kullanılır!!
+
+-- Product tablosundaki category_id alanı ile Category tablosundaki category_id alanını birbirine bağlıyoruz
+
+-- Category tablosundaki category_id alanı Primary Key
+
+-- Product tablosundaki category_id alanını, foreing key yapalım 
+
+alter table Product 
+add CONSTRAINT FK_Product_Category FOREIGN KEY (category_id)
+REFERENCES Category(category_id)
+on DELETE CASCADE
+
+-- yukarıda product tablosunda FK ekledik, 
+-- ekledikten sonra on delete cascade ifadesi ekledik !!
+
+-- on delete cascade ifadesi, ilişkisel tabloda, bir kateogi silindiğinde, ona bağlı olan ürünlerinde silineceğini belirtir!!
+
+-- Diğer ifadeler : On delete  set null  : categori silindiğinde ona bağlı ürünlerin ilişkisi null atanır!!
+--                  on delete restrict   : categori silindiğinde, ona bağlı productlar var ise, kategori silinmez!!
+--					on delete no action  : bu kuralda, aynı yukarıdaki gibi işler!!
+-- 
+-- On Delete Cascade : Bir kategori silindiğindei o kategoriye bağlı olan tüm ürünler silinecektir!!!
+delete from Category where category_id=5
+
+select product_id,product_name from Product where category_id=5
+
+-- Constraintler :  Constraintler : kolonlara belirli kısıtlar getirmek amacı ile kolon bazlı ayarlanan yapılardır!!
+
+-- Örnek : Primary key, bir constraint'dir
+-- Aynı şekilde, Foreing Key de bir constraint'dir
+
+-- Unique Contraint : Bir kolonu unique contraint olarak belirlerseniz o kolona sadece benzersiz bir veri girmek zorunda olursunuz!!
+-- Product tablosundaki, Product name alanına unique contraint koyalım!!
+-- Contraintler : tablo oluturulurken yapılabildiği gibi, tablo oluşturuldan sonra alter table denilerek de yapılabilir!!
+
+alter table Product
+add CONSTRAINT UQ_Name UNIQUE(product_name)
+-- Not : unique contraint'i koymak istediğiniz kolonda aynı olan değerler varsa, unique contraint koyamazsınız!!
+
+
+-- Check Contraint :  Kolona girilecek olan verinin belirli şartlar sağlaması kuralı koyabileceğiniz bir contraint'dir!!
+
+-- Örnek : Product tablosundaki, price alanına 0 dan küçük değer giremez!!
+alter table Product 
+add CONSTRAINT CHK_Price CHECK(price>0)
+
+
+
+-- Default Contraint : 
+-- default contraint uygulanan bir kolona veri girilmediği durumda, o kolona hangi verinin girileceğini belirler!!
+
+-- öncesinde bir kolon oluşturalınm 
+alter table Product
+add InsertedDate DATETIME DEFAULT(GetDate())
+
+
+-- insert edelim 
+insert into Product (product_id,product_name,price,stock,category_id) 
+values(201,'Masa',1000,50,3)
+
+select * from Product where product_id=201
+
+
+-- Not Null Contraint : Bu contraint verilen kolon null değer girileemez!!
+
+-- Örnek : InsertedDate kolonuna not null contraint ekleyelim 
+
+
+
+create table Test
+(
+	id int,
+	ad NVARCHAR(10)
+)
+--Contraint'i verelim 
+
+alter table Test 
+alter COLUMN ad NVARCHAR(10) not null
+
+
+-- product tablosuna yeni bir kolon açıp, default contraint veriniz, sonrasında da aynı tabloya null contraint ekleyiniz!!
+
+-- Trigger : 
+-- Triggerlar : tetikleyicilerdir!!!! : 
+
+-- bir olay olduğunda, insert update delete gibi, bu olaylar olduğunda, başka olayları tetiklemeyi trigger ile yapabilirsiniz!!
+
+
+-- Product tablosuna bir insert geldiği anda, Hesap isimli tabloya, price ve stok değeri çarpılıp eklensin!!
+
+--  öncelikle hesap tablosunu ekleylim 
+create table Hesap(
+	Id int IDENTITY(1,1) PRIMARY KEY,
+	Total money 
+)
+
+-- Triggerimizi yazalım!!
+
+-- Product tablosuna bir insert geldiğinde, 
+
+alter TRIGGER TRG_AfterInsertProduct
+on Product
+after INSERT
+as
+begin
+
+	-- product tablosuna bir insert geldiğinde, oalcakları buraya yazıyoruz!!
+	declare @stok INT
+	DECLARE @price money
+	-- product tablosuna insert edilen veriyi bir satır olarak alıyor olmam lazım bu keyword'de  INSERTED
+
+	select @stok = stock,@price = price from inserted
+
+	-- yeni insert edilen verileri değişkenlerin üzerine aldım, yeni tabloma insert edeyim!!
+	insert into Hesap (Total) values (@stok*@price)
+end
+
+
+-- Product tablosuna bir insert yapalım 
+
+-- öncesinde hesap tablosunda veri var mı bakalım 
+insert into Product (product_id,product_name,price,stock,category_id)
+VALUES(202,'Çatal',10,50,4)
+
+-- hesap tablosuna bakalım 
+select * from Hesap
+
+
